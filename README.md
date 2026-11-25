@@ -132,3 +132,56 @@ To remove the cluster fully: `minikube delete`
 
 ## Next
 Phase B: create an Amazon EKS cluster with eksctl, add a node group, deploy the same app, then delete everything. After that, write the same cluster in Terraform.
+
+---
+
+# Phase B: Running the app on Amazon EKS
+
+Epic: KUBE-12 (tasks KUBE-13 to KUBE-22). Region: ap-south-1 (Mumbai).
+
+## What I built
+- EKS cluster `devops-eks` (Kubernetes 1.36) created with eksctl
+- Managed node group `devops-eks-nodegroup` (t3.small, min 1, max 2, later max 3)
+- nginx Deployment (2 replicas) in namespace `dev`
+- Service of type LoadBalancer, reachable from the internet ("Welcome to nginx!")
+- Scaled nodes from 1 to 2 and added an HPA (2 to 10 pods at 70% CPU)
+- Deleted everything and verified no leftover resources
+
+## Steps and notes
+| Step | Topic | Notes | Jira |
+|------|-------|-------|------|
+| 1 | AWS access (IAM user, CLI, keys) | phase-b/01-aws-access.md | KUBE-13 |
+| 2 | Install kubectl and eksctl | phase-b/02-tools.md | KUBE-14 |
+| 3 | Prepare project and key pair | phase-b/03-*.md | KUBE-15 |
+| 4 | Create the EKS cluster | phase-b/04-*.md | KUBE-16 |
+| 5 | Create the node group | phase-b/05-*.md | KUBE-17 |
+| 6 | Connect kubectl and check the cluster | phase-b/06-*.md | KUBE-18 |
+| 7 | Review in AWS console | phase-b/07-console-review.md | KUBE-19 |
+| 8 | Deploy the app with a LoadBalancer | phase-b/08-deploy-app-on-eks.md | KUBE-20 |
+| 9 | Scaling (nodes and HPA) | phase-b/09-scaling.md | KUBE-21 |
+| 10 | Cleanup | phase-b/10-cleanup.md | KUBE-22 |
+
+## Key commands
+    eksctl create cluster --name devops-eks --region ap-south-1 --zones ap-south-1a,ap-south-1b --version 1.36 --without-nodegroup
+    eksctl create nodegroup --cluster devops-eks --region ap-south-1 --name devops-eks-nodegroup --node-type t3.small --managed --nodes 1 --nodes-min 1 --nodes-max 2
+    aws eks update-kubeconfig --region ap-south-1 --name devops-eks
+    kubectl apply -f deployment.yaml -f service-loadbalancer.yaml
+    eksctl scale nodegroup --cluster devops-eks --name devops-eks-nodegroup --nodes 2 --nodes-min 1 --nodes-max 3 --region ap-south-1
+    kubectl autoscale deploy web --cpu-percent=70 --min=2 --max=10 -n dev
+    eksctl delete cluster --name devops-eks --region ap-south-1 --disable-nodegroup-eviction
+
+## Problems and fixes
+- kubectl 1.37 vs cluster version: kubectl works within one minor version, so I chose cluster 1.36.
+- Console Nodes tab said "Unauthorized": the console user had no access entry. Added one with AmazonEKSAdminViewPolicy. kubectl was never affected.
+- `eksctl delete nodegroup --approve` failed: --approve needs a config file. Removed it.
+- Node drain timed out twice during cleanup (system pods could not be evicted). Fixed with `--disable-nodegroup-eviction` on delete cluster.
+
+## What I learned
+- EKS: the control plane is managed by AWS. I manage worker nodes (managed node group), and eksctl builds the VPC, subnets, NAT gateway, and IAM roles through CloudFormation.
+- A Service of type LoadBalancer creates an AWS load balancer. Delete the Service before deleting the cluster.
+- HPA scales pods and needs metrics-server and CPU requests. A node autoscaler scales nodes.
+- The EKS control plane, NAT gateway, nodes, and load balancer all charge hourly. Delete the same day.
+- Security: use an IAM user (not root) for the CLI, keep keys only in ~/.aws/credentials, keep .pem files out of Git, rotate any exposed key.
+
+## Cleanup
+All Phase B resources were deleted and checked in the console (EC2, load balancers, volumes, Elastic IPs, NAT gateways, VPC, CloudFormation, EKS). Nothing is left running.
