@@ -151,11 +151,11 @@ Epic: KUBE-12 (tasks KUBE-13 to KUBE-22). Region: ap-south-1 (Mumbai).
 | Step | Topic | Notes | Jira |
 |------|-------|-------|------|
 | 1 | AWS access (IAM user, CLI, keys) | phase-b/01-aws-access.md | KUBE-13 |
-| 2 | Install kubectl and eksctl | phase-b/02-tools.md | KUBE-14 |
-| 3 | Prepare project and key pair | phase-b/03-*.md | KUBE-15 |
-| 4 | Create the EKS cluster | phase-b/04-*.md | KUBE-16 |
-| 5 | Create the node group | phase-b/05-*.md | KUBE-17 |
-| 6 | Connect kubectl and check the cluster | phase-b/06-*.md | KUBE-18 |
+| 2 | Install eksctl and verify tools | phase-b/02-install-eksctl.md | KUBE-14 |
+| 3 | Create EC2 key pair for the node group | phase-b/03-ec2-key-pair.md | KUBE-15 |
+| 4 | Create the EKS cluster | phase-b/04-create-eks-control-plane.md | KUBE-16 |
+| 5 | Create the node group | phase-b/05-add-node-group.md | KUBE-17 |
+| 6 | Connect kubectl and check the cluster | phase-b/06-connect-kubectl.md | KUBE-18 |
 | 7 | Review in AWS console | phase-b/07-console-review.md | KUBE-19 |
 | 8 | Deploy the app with a LoadBalancer | phase-b/08-deploy-app-on-eks.md | KUBE-20 |
 | 9 | Scaling (nodes and HPA) | phase-b/09-scaling.md | KUBE-21 |
