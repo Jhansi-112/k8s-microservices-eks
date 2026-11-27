@@ -529,10 +529,3 @@ Console check was clean: EKS, CloudFormation, EC2 instances, Auto Scaling Groups
 - EKS resources cost money while they exist, so delete them after practice and check for leftovers.
 - Never store keys or passwords in Git, chat or screenshots.
 
-## Not covered yet
-- Deploying an application through Argo CD
-- Rolling update and rollback
-- Blue-green deployment
-- Writing manifest files myself
-- Creating EKS from the AWS Console
-- Terraform for EKS, Terraform modules and CI/CD
